@@ -20,9 +20,11 @@ export default defineComponent({
     const store = context.store
 
     const isAllowed = computed(() => {
+      if (context.$config.demoMode) return true
+
       const scope: Array<String> = (store.state as any).userScope.cred as any || (context as any).$auth?.user?.data?.scope
         // console.log('SCOPE', (store.state as any).user.cred as any)
-      return scope && scope.includes(props.permission)
+      return Boolean(scope && scope.includes(props.permission))
     })
     return {
       isAllowed,

@@ -1,14 +1,9 @@
 <template>
   <div>
     <v-card v-if="(isAllowedToEdit)" elevation="0">
-      <v-sheet
-        class="v-sheet--offset mx-auto"
-        color="orange"
-        elevation="12"
-        max-width="calc(100% - 32px)"
-      >
-      <v-card-title> {{ isEditing ? 'Update' : 'Create' }} a location </v-card-title>
-    </v-sheet>
+      <v-sheet class="form-title mx-auto" max-width="calc(100% - 32px)">
+        <v-card-title>{{ isEditing ? 'Edit location' : 'New location' }}</v-card-title>
+      </v-sheet>
       <v-card-text>
         <v-form ref="form">
           <v-row>
@@ -301,7 +296,9 @@ export default defineComponent({
     const { put } = useApi()
     const store = context.store
 
-    const loginUser: any = (store.state as any).user.cred as any
+    const loginUser: any = context.$config.demoMode
+      ? { id: 1, role: 'admin' }
+      : (store.state as any).user.cred as any
     const uploader = ref(null)
     const passwordEditConfirmDialog = ref(false)
     const userImage = ref('')
@@ -573,9 +570,5 @@ export default defineComponent({
 // }
 .v-input.radio-group .v-label {
   text-transform: capitalize;
-}
-.v-sheet--offset {
-    top: -24px;
-    position: relative;
 }
 </style>

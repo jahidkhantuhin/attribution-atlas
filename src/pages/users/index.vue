@@ -196,7 +196,8 @@
                   plain 
                   color="grey" 
                   dark
-                  @click="$router.push(`/users/${item.id}/edit`)"
+                  :disabled="item.id === 1"
+                  @click="handleDeleteUser(item.id)"
                   >
                   <v-icon>mdi-delete</v-icon>
                   <!-- Actions -->
@@ -354,7 +355,7 @@ export default defineComponent({
             pagination.value = response.data.data.pagination
           })
           .catch((error) => {
-            console.log(`getUsers error`, ...error.repose)
+            console.error('Unable to load users', error)
           })
           .finally(() => (busy.value = false))
       }
@@ -407,41 +408,25 @@ export default defineComponent({
     watch(
       tableOptions,
       () => {
-        if (tableOptions.value.sortBy[0]) {
-          filters.value.sort_by =
-            tableOptions.value.sortBy[0] === 'fullname'
-              ? 'first_name'
-              : tableOptions.value.sortBy[0]
-          filters.value.sorting = tableOptions.value.sortDesc[0]
-            ? 'desc'
-            : 'asc'
-        }
+        const sortBy = (tableOptions.value.sortBy || [])[0]
+        if (!sortBy) return
+        filters.value.sort_by = sortBy === 'fullname' ? 'first_name' : sortBy
+        filters.value.sorting = (tableOptions.value.sortDesc || [])[0]
+          ? 'desc'
+          : 'asc'
 
         handleFilterApply()
       },
       { deep: true }
     )
 
-    const handleDeleteUser = (id: any) => {
-      // showConfirmDialog($swal2, {
-      //   title: 'Are you sure you want to delete this user?',
-      //   text:
-      //     'This action is permanent. If you delete this user, all of their data will be deleted as well. Are you certain you want to proceed with this action?',
-      //   icon: 'warning',
-      // }).then(async (result: any) => {
-      //   if (result.isConfirmed) {
-      //     busy.value = true
-      //     await usersApi.deleteUser(id)
-      //     showToast($swal2, {
-      //       title: 'User deleted',
-      //       icon: 'error',
-      //     })
-      //     busy.value = false
-      //     getUsers()
-      //   }
-      // })
-          usersApi.deleteUser(id)
+    const handleDeleteUser = async (id: number) => {
+      try {
+          await usersApi.deleteUser(id)
           getUsers()
+      } catch (error) {
+        console.error('Unable to delete user', error)
+      }
 
     }
 
@@ -476,6 +461,7 @@ export default defineComponent({
     })
 
     onBeforeMount(async () => {
+      loadFiltersFromURL()
       await $axios
         .get('/user')
         .then((response: any) => {
@@ -489,8 +475,6 @@ export default defineComponent({
               cred: response.data.data.scope,
             })
           })
-      loadFiltersFromURL()
-
     })
 
     onMounted(() => {

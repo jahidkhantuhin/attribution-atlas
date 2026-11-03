@@ -1,14 +1,9 @@
 <template>
   <div>
     <v-card v-if="(isAllowedToEdit && step1)" elevation="0">
-      <v-sheet
-        class="v-sheet--offset mx-auto"
-        color="orange"
-        elevation="12"
-        max-width="calc(100% - 32px)"
-      >
-      <v-card-title> {{ isEditing ? 'Update' : 'Create' }} a user </v-card-title>
-    </v-sheet>
+      <v-sheet class="form-title mx-auto" max-width="calc(100% - 32px)">
+        <v-card-title>{{ isEditing ? 'Edit teammate' : 'Invite teammate' }}</v-card-title>
+      </v-sheet>
       <v-card-text>
         <v-form ref="form">
           <v-row>
@@ -277,7 +272,9 @@ export default defineComponent({
     const { put } = useApi()
     const store = context.store
 
-    const loginUser: any = (store.state as any).user.cred as any
+    const loginUser: any = context.$config.demoMode
+      ? { id: 1, role: 'admin' }
+      : (store.state as any).user.cred as any
     const uploader = ref(null)
     const passwordEditConfirmDialog = ref(false)
     const userImage = ref('')
@@ -330,7 +327,9 @@ export default defineComponent({
         loading.value = loadingRoles.value = false
       }
       loadingRoles.value = true
-      const user: any = (store.state as any).user.cred as any
+      const user: any = context.$config.demoMode
+        ? { id: 1, role: 'admin' }
+        : (store.state as any).user.cred as any
       if (user.role === ADMIN_ROLE || user.role === SUPER_ADMIN_ROLE) {
         const res = await getRoles()
         roles.value = res.data?.data
@@ -549,7 +548,7 @@ export default defineComponent({
     const isAllowedToEdit = computed(() => {
       const editingUser: any = data.value
 
-      return isUserAllowedToEdit(
+      return context.$config.demoMode || isUserAllowedToEdit(
         editingUser,
         loginUser,
         route.value.path.includes('profile') ? 'profile' : null
@@ -591,9 +590,5 @@ export default defineComponent({
 // }
 .v-input.radio-group .v-label {
   text-transform: capitalize;
-}
-.v-sheet--offset {
-    top: -24px;
-    position: relative;
 }
 </style>

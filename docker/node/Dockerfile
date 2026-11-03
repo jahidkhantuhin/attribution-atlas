@@ -1,10 +1,10 @@
 FROM node:16-alpine
-WORKDIR /var/www/foundation/
+WORKDIR /var/www/attribution-atlas/
 
 COPY ./src/package.json ./
 COPY ./src/package-lock.json ./
 
-RUN npm install
+RUN npm ci --legacy-peer-deps
 
 COPY ./src/ ./
 

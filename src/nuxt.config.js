@@ -1,13 +1,23 @@
 import colors from 'vuetify/es5/util/colors'
 
-let API_URL
-
-// if (process.env.NODE_ENV === 'development') {
-  API_URL = process.env.BASE_URL_DEVELOPMENT
-// }
+const appName = process.env.APP_NAME || 'Attribution Atlas'
+const organizationName = process.env.ORGANIZATION_NAME || appName
+const organizationEmailDomain =
+  process.env.ORGANIZATION_EMAIL_DOMAIN || 'example.com'
+const organizationLogoUrl = process.env.ORGANIZATION_LOGO_URL || ''
+const apiBaseUrl = (
+  process.env.API_BASE_URL || 'https://api.example.com/api/v1'
+).replace(/\/+$/, '')
+const appBaseUrl = (
+  process.env.APP_BASE_URL || 'http://localhost:8088'
+).replace(/\/+$/, '')
+const googleClientId = process.env.GOOGLE_CLIENT_ID || ''
+const googleOAuthRedirectUri =
+  process.env.GOOGLE_OAUTH_REDIRECT_URI || `${appBaseUrl}/social-login`
+const demoMode = process.env.DEMO_MODE === 'true'
 
 const axiosConfig = {
-  baseURL: API_URL,
+  baseURL: apiBaseUrl,
   withCredentials: true,
 }
 
@@ -23,8 +33,8 @@ export default {
 
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
-    titleTemplate: '%s - foundation-ui',
-    title: 'foundation-ui',
+    titleTemplate: `%s - ${appName}`,
+    title: appName,
     htmlAttrs: {
       lang: 'en',
     },
@@ -41,7 +51,7 @@ export default {
   css: [],
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
-  plugins: [],
+  plugins: [{ src: '~/plugins/demoApi.js', mode: 'client' }],
 
   // Auto import components: https://go.nuxtjs.dev/config-components
   components: true,
@@ -68,8 +78,14 @@ export default {
   axios: axiosConfig,
 
   publicRuntimeConfig: {
+    appName,
+    organizationName,
+    organizationEmailDomain,
+    organizationLogoUrl,
+    googleLoginEnabled: Boolean(googleClientId),
+    demoMode,
     axios: {
-      browserBaseURL: API_URL,
+      browserBaseURL: apiBaseUrl,
     },
   },
 
@@ -83,6 +99,15 @@ export default {
     theme: {
       dark: false,
       themes: {
+        light: {
+          primary: '#2457e6',
+          accent: '#13b8a6',
+          secondary: '#17233d',
+          info: '#13b8a6',
+          warning: '#f5a623',
+          error: '#e65f59',
+          success: '#11a579',
+        },
         dark: {
           primary: colors.blue.darken2,
           accent: colors.grey.darken3,
@@ -130,17 +155,16 @@ export default {
           autoFetch: true
         },
         endpoints: {
-          login: { url: `${API_URL + '/login'}`, method: 'post', propertyName: "data.token"},
-          logout: { url: `${API_URL + '/logout'}`, method: 'post' },
-          user: { url: `${API_URL + '/user'}`, method: 'get', propertyName: "data.user"}
+          login: { url: `${apiBaseUrl}/login`, method: 'post', propertyName: "data.token"},
+          logout: { url: `${apiBaseUrl}/logout`, method: 'post' },
+          user: { url: `${apiBaseUrl}/user`, method: 'get', propertyName: "data.user"}
         }
       },
       google: {
-        clientId: '109019455855-hjv5klrhc7ugf0dd0j1e4u3dim6fcicf.apps.googleusercontent.com',
+        clientId: googleClientId,
         codeChallengeMethod: '',
         responseType: 'code',
-        redirectUri: `${process.env.NODE_ENV === 'development' ? 'http://localhost:8088/login' :
-        process.env.NODE_ENV === 'staging' ? 'https://foundation-dev.wm4d.com/social-login' : 'https://foundation.wm4d.com/social-login' }`,
+        redirectUri: googleOAuthRedirectUri,
         token: {
           property: 'data.token',
           global: true,
@@ -152,7 +176,7 @@ export default {
           autoFetch: true
         },
         endpoints: {
-          token: API_URL + '/social-login', // some backend url to resolve your auth with google and give you the token back
+          token: `${apiBaseUrl}/social-login`, // backend endpoint that exchanges the Google response for an app token
           userInfo: '/user?noswal' // the endpoint to get the user info after you received the token 
         },
       },

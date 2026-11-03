@@ -1,14 +1,9 @@
 <template>
   <div>
     <v-card v-if="(isAllowedToEdit)" elevation="0">
-      <v-sheet
-        class="v-sheet--offset mx-auto"
-        color="orange"
-        elevation="12"
-        max-width="calc(100% - 32px)"
-      >
-      <v-card-title> {{ isEditing ? 'Update' : 'Create' }} a client </v-card-title>
-    </v-sheet>
+      <v-sheet class="form-title mx-auto" max-width="calc(100% - 32px)">
+        <v-card-title>{{ isEditing ? 'Edit client' : 'New client' }}</v-card-title>
+      </v-sheet>
       <v-card-text>
         <v-form ref="form">
           <v-row>
@@ -156,6 +151,7 @@ import validateStrongPassword from '../../shared/ValidateStrongPassword'
 import { ADMIN_ROLE, SUPER_ADMIN_ROLE } from '../../utils/UserEnums'
 import isUserAllowedToEdit from '../../utils/isUserAllowedToEdit'
 import useAxios from '../../plugins/useAxios'
+import configureOrganizationFixture from '../../utils/configureOrganizationFixture'
 // import swalMixin, { showToast } from '~/utils/swalMixin'
 
 export default defineComponent({
@@ -175,7 +171,9 @@ export default defineComponent({
     const { put } = useApi()
     const store = context.store
 
-    const loginUser: any = (store.state as any).user.cred as any
+    const loginUser: any = context.$config.demoMode
+      ? { id: 1, role: 'admin' }
+      : (store.state as any).user.cred as any
     const uploader = ref(null)
     const passwordEditConfirmDialog = ref(false)
     const userImage = ref('')
@@ -183,203 +181,11 @@ export default defineComponent({
     const route = useRoute()
     const router = useRouter()
     const newUserData = ref()
-    const accountManagers = ref([
-  {
-    "id": 33,
-    "first_name": "Brady",
-    "last_name": "O'Keefe",
-    "full_name": "Brady O'Keefe",
-    "email": "wbrakus@yahoo.com",
-    "job_title": "Automotive Body Repairer",
-    "organisation": null,
-    "pay_rate": "41.65",
-    "phone_number": "+13017276147",
-    "address": "41.65",
-    "role": "user"
-  },
-  {
-    "id": 34,
-    "first_name": "Candice",
-    "last_name": "Morar",
-    "full_name": "Candice Morar",
-    "email": "cwolff@bauch.com",
-    "job_title": "Human Resource Director",
-    "organisation": null,
-    "pay_rate": "28.93",
-    "phone_number": "+19516032433",
-    "address": "28.93",
-    "role": null
-  },
-  {
-    "id": 35,
-    "first_name": "Cassie",
-    "last_name": "Mann",
-    "full_name": "Cassie Mann",
-    "email": "letitia.pollich@gmail.com",
-    "job_title": "Video Editor",
-    "organisation": null,
-    "pay_rate": "97.38",
-    "phone_number": "+14849930599",
-    "address": "97.38",
-    "role": null
-  },
-  {
-    "id": 39,
-    "first_name": "Cyrus",
-    "last_name": "Hackett",
-    "full_name": "Cyrus Hackett",
-    "email": "abner.wiegand@gmail.com",
-    "job_title": "Director Of Business Development",
-    "organisation": null,
-    "pay_rate": "18.46",
-    "phone_number": "+19892459790",
-    "address": "18.46",
-    "role": null
-  },
-  {
-    "id": 36,
-    "first_name": "Ernestine",
-    "last_name": "Kirlin",
-    "full_name": "Ernestine Kirlin",
-    "email": "emily58@moen.com",
-    "job_title": "Architecture Teacher",
-    "organisation": null,
-    "pay_rate": "6.85",
-    "phone_number": "+13253059184",
-    "address": "6.85",
-    "role": null
-  },
-  {
-    "id": 30,
-    "first_name": "fsfd",
-    "last_name": "fsfsfs",
-    "full_name": "fsfd fsfsfs",
-    "email": "fsfs@wm4d.com",
-    "job_title": null,
-    "organisation": null,
-    "pay_rate": null,
-    "phone_number": null,
-    "address": null,
-    "role": "call scorer"
-  },
-  {
-    "id": 29,
-    "first_name": "fsfgs",
-    "last_name": "fsfsdf",
-    "full_name": "fsfgs fsfsdf",
-    "email": "fsfsdf@wm4d.com",
-    "job_title": null,
-    "organisation": null,
-    "pay_rate": null,
-    "phone_number": null,
-    "address": null,
-    "role": "account manager"
-  },
-  {
-    "id": 20,
-    "first_name": "Jahid",
-    "last_name": "Khan",
-    "full_name": "Jahid Khan",
-    "email": "jahid@wm4d.com",
-    "job_title": null,
-    "organisation": null,
-    "pay_rate": null,
-    "phone_number": null,
-    "address": null,
-    "role": "super admin"
-  },
-  {
-    "id": 37,
-    "first_name": "Kaley",
-    "last_name": "Kerluke",
-    "full_name": "Kaley Kerluke",
-    "email": "donnelly.alison@gmail.com",
-    "job_title": "Engineering Manager",
-    "organisation": null,
-    "pay_rate": "20.22",
-    "phone_number": "+18438324505",
-    "address": "20.22",
-    "role": null
-  },
-  {
-    "id": 38,
-    "first_name": "Nyah",
-    "last_name": "Welch",
-    "full_name": "Nyah Welch",
-    "email": "willa97@bruen.com",
-    "job_title": "Explosives Expert",
-    "organisation": null,
-    "pay_rate": "65.76",
-    "phone_number": "+19719153561",
-    "address": "65.76",
-    "role": null
-  },
-  {
-    "id": 27,
-    "first_name": "Test 1",
-    "last_name": "jahid",
-    "full_name": "Test 1 jahid",
-    "email": "test1jahid@wm4d.com",
-    "job_title": null,
-    "organisation": null,
-    "pay_rate": null,
-    "phone_number": null,
-    "address": null,
-    "role": "user"
-  },
-  {
-    "id": 40,
-    "first_name": "test 1",
-    "last_name": "arinze",
-    "full_name": "test 1 arinze",
-    "email": "test1arinze@wm4d.com",
-    "job_title": null,
-    "organisation": null,
-    "pay_rate": null,
-    "phone_number": null,
-    "address": null,
-    "role": "user"
-  },
-  {
-    "id": 28,
-    "first_name": "Test 2",
-    "last_name": "jahid",
-    "full_name": "Test 2 jahid",
-    "email": "test2jahid@wm4d.com",
-    "job_title": null,
-    "organisation": null,
-    "pay_rate": null,
-    "phone_number": null,
-    "address": null,
-    "role": "user"
-  },
-  {
-    "id": 31,
-    "first_name": "Test 3",
-    "last_name": "jahid",
-    "full_name": "Test 3 jahid",
-    "email": "test3jahid@wm4d.com",
-    "job_title": null,
-    "organisation": null,
-    "pay_rate": null,
-    "phone_number": null,
-    "address": null,
-    "role": "account manager"
-  },
-  {
-    "id": 32,
-    "first_name": "Test 4",
-    "last_name": "jahid",
-    "full_name": "Test 4 jahid",
-    "email": "test4jahid@wm4d.com",
-    "job_title": null,
-    "organisation": null,
-    "pay_rate": null,
-    "phone_number": null,
-    "address": null,
-    "role": "account manager"
-  }
-])
+    const accountManagers = ref(configureOrganizationFixture([
+      { id: 2, first_name: 'Morgan', last_name: 'Reed', full_name: 'Morgan Reed', email: 'morgan.reed@example.com', role: 'account manager' },
+      { id: 3, first_name: 'Taylor', last_name: 'Brooks', full_name: 'Taylor Brooks', email: 'taylor.brooks@example.com', role: 'account manager' },
+      { id: 4, first_name: 'Jordan', last_name: 'Parker', full_name: 'Jordan Parker', email: 'jordan.parker@example.com', role: 'account manager' },
+    ]))
     // const toast = ((context as any).parent as any).$toast
     const data = ref({
       id: '',
@@ -631,9 +437,5 @@ export default defineComponent({
 // }
 .v-input.radio-group .v-label {
   text-transform: capitalize;
-}
-.v-sheet--offset {
-    top: -24px;
-    position: relative;
 }
 </style>

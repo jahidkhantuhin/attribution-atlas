@@ -13,7 +13,7 @@
         </v-expand-transition>
         <v-expand-transition>
           <!-- <v-card class="rounded-t-xl rounded-l-xl" color="#FFE0E0E0" v-show="showForm" elevation="10">
-            <v-card-title>Welcome to Foundation 2.0</v-card-title>
+            <v-card-title>Welcome to Attribution Atlas</v-card-title>
             <v-card-subtitle>Please login with your email and password or try with google account below.</v-card-subtitle>
             <v-spacer></v-spacer>
             <v-card-text>
@@ -27,8 +27,13 @@
         <v-expand-transition>
           <v-card class="" color="rgba(255,255,255,0.2)" elevation="10">
             <v-card-text class="text-center">
-              <h1 class="welcome-heading ">Welcome to Foundation 2.0</h1>
-            <img class="login-header-image" src="../static/wm4d-logo.jpg" alt="webmarketingfordentists">
+              <h1 class="welcome-heading">Welcome to {{ organizationName }}</h1>
+              <img
+                v-if="organizationLogoUrl"
+                class="login-header-image"
+                :src="organizationLogoUrl"
+                :alt="`${organizationName} logo`"
+              >
             </v-card-text>
             <!-- <v-card-subtitle>Please login with your email and password or try with google account below.</v-card-subtitle> -->
             <v-spacer></v-spacer>
@@ -64,6 +69,7 @@ export default defineComponent({
   setup(_props) {
     const $axios = useAxios()
     const context = useContext()
+    const { $config } = context
     const router = useRouter()
     const route = useRoute()
     // const store = useStore()
@@ -92,6 +98,8 @@ export default defineComponent({
     return {
       showForm,
       fetchingUser,
+      organizationName: $config.organizationName,
+      organizationLogoUrl: $config.organizationLogoUrl,
       // isAuthenticated,
     }
   },
@@ -102,10 +110,7 @@ export default defineComponent({
 </script>
 <style lang="scss" scoped>
 #loginPage {
-  background: url('https://wallpaperaccess.com/full/16692.jpg');
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: cover;
+  background: linear-gradient(135deg, #17324d, #3f617a);
   transition: background-image 0.2s ease-in-out;
   height: 100%;
   .welcome-heading {
@@ -115,8 +120,10 @@ export default defineComponent({
     margin: 0 20px;
   }
   .login-header-image {
-    width: 20%;
-    margin: 10px 120px;
+    display: block;
+    max-width: 180px;
+    max-height: 100px;
+    margin: 10px auto;
   }
 }
 </style>

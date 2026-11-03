@@ -160,7 +160,7 @@
           </template>
           <template #item.name="{ item }">
             <nuxt-link class="client-link" :to="`/calls/${item.id}`">
-              <span>{{ item.last_name }} {{ item.first_name }}</span>
+              <span>{{ item.name }}</span>
             </nuxt-link>
           </template>
           <template #item.actions="{ item }">
@@ -198,10 +198,9 @@ import {
 } from '@nuxtjs/composition-api'
 import { IBreadcrumbs } from '@/store'
 
-import useUsers from '../../services/useUsers'
+import useClientRecords from '../../services/useClientRecords'
 import { Dictionary } from '../../node_modules/@types/lodash'
 import isUserAllowedToEdit from '../../utils/isUserAllowedToEdit'
-import clientList from '../../report/clients'
 import corReportList from '../../report/cor-report'
 // import swalMixin, { showConfirmDialog, showToast } from '~/utils/swalMixin'
 
@@ -231,7 +230,7 @@ export default defineComponent({
     const store = context.store
     const router = useRouter()
     const route = useRoute()
-    const usersApi = useUsers()
+    const clientsApi = useClientRecords()
     const busy = ref(false)
     // const $swal2 = swalMixin((parent as any).$swal as any)
 
@@ -306,7 +305,7 @@ export default defineComponent({
     }
 
     // users
-    const users = clientList
+    const users = ref([])
     const corUsers = corReportList
 
     const pagination = ref({
@@ -323,42 +322,30 @@ export default defineComponent({
             filters.value.sort_by + `:` + filters.value.sorting.toLowerCase(),
         }
         busy.value = true
-        usersApi
+        clientsApi
           .list({
             ...appliedFilters,
             limit: itemsPerPage.value,
             page: page.value,
           })
           .then((response) => {
-            // users.value = response.data.data.result
+            users.value = response.data.data.result
             pagination.value = response.data.data.pagination
           })
           .catch((error) => {
-            console.log(`getUsers error`, ...error.repose)
+            console.error('Unable to load clients for call insights', error)
           })
           .finally(() => (busy.value = false))
       }
     }
 
     // roles
-    const roles = ref([])
+    const roles = ref([
+      { id: 2, name: 'Morgan Reed' },
+      { id: 3, name: 'Taylor Brooks' },
+      { id: 4, name: 'Jordan Parker' },
+    ])
     const loadingRoles = ref(false)
-
-    const getRoles = () => {
-      loadingRoles.value = true
-      usersApi
-        .getRoles()
-        .then(
-          ({ data }) =>
-            (roles.value = data.data.filter(
-              // exclude super admin
-              (item: { name: string | string[] }) =>
-                !item.name.includes('super admin')
-            ))
-        )
-        .catch(({ response }) => console.log(`getRoles error`, response))
-        .finally(() => (loadingRoles.value = false))
-    }
 
     // data table
     const tableHeaders = ref([
@@ -581,15 +568,12 @@ export default defineComponent({
     watch(
       tableOptions,
       () => {
-        if (tableOptions.value.sortBy[0]) {
-          filters.value.sort_by =
-            tableOptions.value.sortBy[0] === 'fullname'
-              ? 'first_name'
-              : tableOptions.value.sortBy[0]
-          filters.value.sorting = tableOptions.value.sortDesc[0]
-            ? 'desc'
-            : 'asc'
-        }
+        const sortBy = (tableOptions.value.sortBy || [])[0]
+        if (!sortBy) return
+        filters.value.sort_by = sortBy === 'fullname' ? 'first_name' : sortBy
+        filters.value.sorting = (tableOptions.value.sortDesc || [])[0]
+          ? 'desc'
+          : 'asc'
 
         handleFilterApply()
       },
@@ -655,7 +639,6 @@ export default defineComponent({
 
     onMounted(() => {
       getUsers()
-      getRoles()
     })
 
     return {
@@ -683,7 +666,7 @@ export default defineComponent({
     }
   },
   head: {
-    title: 'Users',
+    title: 'Call insights',
   },
 })
 </script>

@@ -219,7 +219,7 @@
             </template>
             <template #item.name="{ item }">
               <nuxt-link class="client-link" :to="`/clients/${item.id}`">
-                <span>{{ item.last_name }} {{ item.first_name }}</span>
+                <span>{{ item.name || `${item.last_name} ${item.first_name}` }}</span>
               </nuxt-link>
             </template>
           </v-data-table>
@@ -259,7 +259,7 @@
           </template>
           <template #item.name="{ item }">
             <nuxt-link class="client-link" :to="`/clients/${item.id}`">
-              <span>{{ item.last_name }} {{ item.first_name }}</span>
+              <span>{{ item.name }}</span>
             </nuxt-link>
           </template>
           <template #item.actions="{ item }">
@@ -279,6 +279,7 @@
                   plain 
                   color="grey" 
                   dark 
+                  @click="handleDeleteClient(item.id)"
                   >
                   <v-icon>mdi-delete</v-icon>
                   <!-- Actions -->
@@ -310,7 +311,6 @@ import useClientRecords from '../../services/useClientRecords'
 import useClientLocations from '../../services/useClientLocations'
 import { Dictionary } from '../../node_modules/@types/lodash'
 import isUserAllowedToEdit from '../../utils/isUserAllowedToEdit'
-import clientList from '../../report/clients'
 import corReportList from '../../report/cor-report'
 import useAxios from '../../plugins/useAxios'
 // import swalMixin, { showConfirmDialog, showToast } from '~/utils/swalMixin'
@@ -445,14 +445,18 @@ export default defineComponent({
             pagination.value = response.data.data.pagination
           })
           .catch((error) => {
-            console.log(`getUsers error`, ...error.repose)
+            console.error('Unable to load clients', error)
           })
           .finally(() => (busy.value = false))
       }
     }
 
     // roles
-    const roles = ref([])
+    const roles = ref([
+      { id: 2, name: 'Morgan Reed' },
+      { id: 3, name: 'Taylor Brooks' },
+      { id: 4, name: 'Jordan Parker' },
+    ])
     const loadingRoles = ref(false)
 
     // const getRoles = () => {
@@ -692,42 +696,25 @@ export default defineComponent({
     watch(
       tableOptions,
       () => {
-        if (tableOptions.value.sortBy[0]) {
-          filters.value.sort_by =
-            tableOptions.value.sortBy[0] === 'fullname'
-              ? 'first_name'
-              : tableOptions.value.sortBy[0]
-          filters.value.sorting = tableOptions.value.sortDesc[0]
-            ? 'desc'
-            : 'asc'
-        }
+        const sortBy = (tableOptions.value.sortBy || [])[0]
+        if (!sortBy) return
+        filters.value.sort_by = sortBy === 'fullname' ? 'first_name' : sortBy
+        filters.value.sorting = (tableOptions.value.sortDesc || [])[0]
+          ? 'desc'
+          : 'asc'
 
         handleFilterApply()
       },
       { deep: true }
     )
 
-    const handleDeleteUser = (id: any) => {
-      // showConfirmDialog($swal2, {
-      //   title: 'Are you sure you want to delete this user?',
-      //   text:
-      //     'This action is permanent. If you delete this user, all of their data will be deleted as well. Are you certain you want to proceed with this action?',
-      //   icon: 'warning',
-      // }).then(async (result: any) => {
-      //   if (result.isConfirmed) {
-      //     busy.value = true
-      //     await usersApi.deleteUser(id)
-      //     showToast($swal2, {
-      //       title: 'User deleted',
-      //       icon: 'error',
-      //     })
-      //     busy.value = false
-      //     getUsers()
-      //   }
-      // })
-          // usersApi.deleteUser(id)
-          getUsers()
-
+    const handleDeleteClient = async (id: number) => {
+      try {
+        await usersApi.deleteClient(id)
+        await getUsers()
+      } catch (error) {
+        console.error('Unable to delete client', error)
+      }
     }
 
     const handlePaginationChange = (e: any) => {
@@ -761,6 +748,7 @@ export default defineComponent({
     })
 
     onBeforeMount(async () => {
+      loadFiltersFromURL()
       await $axios
         .get('/user')
         .then((response: any) => {
@@ -774,8 +762,6 @@ export default defineComponent({
               cred: response.data.data.scope,
             })
           })
-      loadFiltersFromURL()
-
     })
 
     onMounted(() => {
@@ -799,7 +785,7 @@ export default defineComponent({
       itemsPerPage,
       itemsPerPageOptions,
       tableOptions,
-      handleDeleteUser,
+      handleDeleteClient,
       handlePaginationChange,
       page,
       corReport,
@@ -808,7 +794,7 @@ export default defineComponent({
     }
   },
   head: {
-    title: 'Users',
+    title: 'Clients',
   },
 })
 </script>

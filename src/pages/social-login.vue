@@ -13,8 +13,7 @@
         </v-expand-transition>
         <v-expand-transition>
           <v-card v-show="showForm" elevation="10">
-            <v-card-title>Welcome to</v-card-title>
-            <v-card-subtitle>Foundation 2.0</v-card-subtitle>
+            <v-card-title>Welcome to {{ organizationName }}</v-card-title>
 
             <v-card-text>
               <LoginForm 
@@ -49,7 +48,7 @@ export default defineComponent({
   auth: 'guest',
   layout: 'blank',
   setup(_props) {
-    const { $auth } = useContext()
+    const { $auth, $config } = useContext()
     const $axios = useAxios()
     const router = useRouter()
     const route = useRoute()
@@ -122,6 +121,7 @@ export default defineComponent({
       fetchingUser,
       googleCred,
       onClientChange,
+      organizationName: $config.organizationName,
     }
   },
   head: {

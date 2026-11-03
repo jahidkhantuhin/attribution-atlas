@@ -5,7 +5,7 @@
       class="custom-label-color mt-n8"
       color="white"
       background-color="rgba(255,255,255,0.1)"
-      placeholder="example@wm4d.com"
+      :placeholder="emailPlaceholder"
       dense
       filled
       rounded
@@ -46,10 +46,10 @@
     >
       <v-icon left>mdi-login</v-icon> Login
     </v-btn>
-    <div class="text-center mb-2">
+    <div v-if="googleLoginEnabled" class="text-center mb-2">
       Or continue with
     </div>
-    <v-row>
+    <v-row v-if="googleLoginEnabled">
       <v-col>
         <v-btn
           class="mt-2"
@@ -100,6 +100,7 @@ export default defineComponent({
 
     // const { $axios } = root
     const context = useContext()
+    const { $config } = context
     const store = useStore()
     const router = useRouter()
     const route = useRoute()
@@ -206,6 +207,8 @@ export default defineComponent({
     }
 
     return {
+      emailPlaceholder: `name@${$config.organizationEmailDomain}`,
+      googleLoginEnabled: $config.googleLoginEnabled,
       formValid,
       formBusy,
       email,

@@ -1,40 +1,22 @@
-# This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
-
 name: Node.js CI
 
 on:
   pull_request:
-    branches: [ "dev" ]
+    branches: ["main"]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
-        node-version: [ 16.x ]
     steps:
-    - name: Node Js
-      uses: actions/setup-node@v1
-    - name: Set output
-      id: vars
-      run: echo ::set-output name=short_ref::${GITHUB_HEAD_REF#refs/*/}
-      # Copy the repository to the directory on the server/VPS used for the application
-    - name: Copy dist to VPS
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.HOST }}
-        username: ${{ secrets.USERNAME }}
-        key: ${{ secrets.PRIVATE_KEY }}
-        port: 22
-        script: |
-          cd /var/www/fdn.wm4d.com/web/ui/app/src
-          sudo git fetch
-          sudo git reset --hard origin/${{ steps.vars.outputs.short_ref }}
-          export NVM_DIR=~/.nvm
-          source ~/.nvm/nvm.sh
-          yarn install
-          sudo rm -r dist
-          npm run generate
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 16
+          cache: npm
+          cache-dependency-path: src/package-lock.json
+      - run: npm ci --legacy-peer-deps
+        working-directory: src
+      - run: npm test -- --runInBand
+        working-directory: src
+      - run: npm run build
+        working-directory: src

@@ -32,7 +32,7 @@
 #          key: ${{ secrets.PRIVATE_KEY }}
 #          port: 22
 #          script: |
-#            cd /var/www/fdn.wm4d.com/web/ui/app/src
+#            cd "$DEPLOY_PATH"
 #            sudo git fetch
 #            sudo git reset --hard origin/${{ steps.vars.outputs.short_ref }}
 #    #          sudo /home/ubuntu/.nvm/versions/node/v17.4.0/bin/npm install
