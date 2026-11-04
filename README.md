@@ -59,3 +59,7 @@ For static generation, provide these values in the environment used for
 
 The suggested GitHub repository name is `attribution-atlas`:
 `https://github.com/jahidkhantuhin/attribution-atlas`.
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
